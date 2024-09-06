@@ -1,0 +1,381 @@
+openapi: 3.0.3
+info:
+  description: |
+    This API allows for the uploading of CVs in PDF and Word document formats, parsing them into a JSON structure, and matching them against job descriptions to return the best matching CVs.
+  title: CV Matching API
+  version: 1.0.0
+servers:
+- url: http://localhost:8001
+tags:
+- description: Everything about CVs
+  name: cv
+- description: Everything about job descriptions
+  name: job
+- description: CV and job description matching
+  name: matching
+paths:
+  /v1/cv/upload:
+    post:
+      description: Upload a new CV in PDF or Word document format
+      operationId: uploadCv
+      requestBody:
+        content:
+          application/pdf:
+            schema:
+              format: binary
+              type: string
+        description: Upload a new CV file
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cv'
+          description: Successful operation
+        "400":
+          description: Invalid file supplied
+      summary: Upload a new CV
+      tags:
+      - cv
+  /v1/cv/{cvId}:
+    get:
+      description: Returns a single CV
+      operationId: getCvById
+      parameters:
+      - description: ID of CV to return
+        explode: false
+        in: path
+        name: cvId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  b64:
+                    format: base64
+                    type: string
+          description: successful operation
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: CV not found
+      summary: Get CV by ID
+      tags:
+      - cv
+    delete:
+      description: Deletes a single CV
+      operationId: deleteCvById
+      parameters:
+      - description: ID of CV to delete
+        explode: false
+        in: path
+        name: cvId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: successful operation
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: CV not found
+      summary: Delete CV by ID
+      tags:
+      - cv
+  /v1/cv:
+    get:
+      description: Returns a list of CV
+      operationId: getCvList
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Cv'
+                type: array
+          description: successful operation
+        "400":
+          description: Invalid supplied
+        "404":
+          description: CV not found
+      summary: Get CV List
+      tags:
+      - cv
+  /v1/job:
+    get:
+      description: Returns a list of job
+      operationId: getJobList
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Job'
+                type: array
+          description: successful operation
+        "400":
+          description: Invalid supplied
+        "404":
+          description: Job not found
+      summary: Get job List
+      tags:
+      - job
+    post:
+      description: Create a new job
+      operationId: createJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        description: Create a new job description
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: Successful operation
+        "400":
+          description: Invalid input
+      summary: Create a new job
+      tags:
+      - job
+  /v1/job/{jobId}:
+    get:
+      description: Returns a single job
+      operationId: getJobById
+      parameters:
+      - description: ID of job to return
+        explode: false
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Job not found
+      summary: Get job by ID
+      tags:
+      - job
+    delete:
+      description: Deletes a single job
+      operationId: deleteJobById
+      parameters:
+      - description: ID of job to delete
+        explode: false
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: successful operation
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: Job not found
+      summary: Delete job by ID
+      tags:
+      - job
+  /v1/matching:
+    post:
+      description: Match CVs against a job and return the best matches
+      operationId: matchCvsToJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/matchCvsToJob_request'
+        description: Job to match against
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/matchCvsToJob_response'
+          description: Successful operation
+        "400":
+          description: Invalid input
+      summary: Match CVs to a job
+      tags:
+      - matching
+components:
+  schemas:
+    Cv:
+      example:
+        skills:
+        - skills
+        - skills
+        education:
+        - education
+        - education
+        phone: "+1234567890"
+        name: John Doe
+        id: "1"
+        experience:
+        - experience
+        - experience
+        email: john.doe@example.com
+      properties:
+        id:
+          example: "1"
+          title: id
+          type: string
+        name:
+          example: John Doe
+          title: name
+          type: string
+        email:
+          example: john.doe@example.com
+          title: email
+          type: string
+        phone:
+          example: "+1234567890"
+          title: phone
+          type: string
+        education:
+          items:
+            type: string
+          title: education
+          type: array
+        experience:
+          items:
+            type: string
+          title: experience
+          type: array
+        skills:
+          items:
+            type: string
+          title: skills
+          type: array
+        match:
+          type: string
+      title: Cv
+      type: object
+    Job:
+      example:
+        description: We are looking for a skilled software engineer...
+        id: "1"
+        title: Software Engineer
+      properties:
+        id:
+          example: "1"
+          title: id
+          type: string
+        title:
+          example: Software Engineer
+          title: title
+          type: string
+        description:
+          example: We are looking for a skilled software engineer...
+          title: description
+          type: string
+      title: Job
+      type: object
+    matchCvsToJob_request:
+      properties:
+        jobId:
+          title: jobId
+          type: string
+        cvId:
+          items:
+            type: string
+          title: cvId
+          type: array
+      title: matchCvsToJob_request
+      type: object
+    matchCvsToJob_response:
+      example:
+        topMatches:
+        - skills:
+          - skills
+          - skills
+          education:
+          - education
+          - education
+          phone: "+1234567890"
+          name: John Doe
+          id: "1"
+          experience:
+          - experience
+          - experience
+          email: john.doe@example.com
+        - skills:
+          - skills
+          - skills
+          education:
+          - education
+          - education
+          phone: "+1234567890"
+          name: John Doe
+          id: "1"
+          experience:
+          - experience
+          - experience
+          email: john.doe@example.com
+        bestMatch:
+          skills:
+          - skills
+          - skills
+          education:
+          - education
+          - education
+          phone: "+1234567890"
+          name: John Doe
+          id: "1"
+          experience:
+          - experience
+          - experience
+          email: john.doe@example.com
+      properties:
+        bestMatch:
+          $ref: '#/components/schemas/Cv'
+        topMatches:
+          items:
+            $ref: '#/components/schemas/Cv'
+          title: topMatches
+          type: array
+      title: matchCvsToJob_response
+      type: object
+  securitySchemes:
+    api_key:
+      in: header
+      name: api_key
+      type: apiKey
+    oauth2:
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8000/oauth/authorize
+          scopes:
+            read:cvs: Read CVs
+            write:cvs: Write CVs
+            read:jobs: Read job
+            write:jobs: Write job descriptions
+          tokenUrl: http://localhost:8000/oauth/token
+      type: oauth2
